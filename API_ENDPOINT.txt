@@ -1,0 +1,1 @@
+https://qycb40y6n6.execute-api.ap-south-1.amazonaws.com/dev/api/verify

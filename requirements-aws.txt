@@ -1,0 +1,41 @@
+# AWS Integration Requirements for VeriGov AI
+# Install with: pip install -r requirements-aws.txt
+
+# Core AWS SDK
+boto3>=1.34.0              # AWS SDK for Python
+botocore>=1.34.0           # Low-level AWS service access
+
+# AWS Lambda & API Gateway
+aws-lambda-powertools>=2.30.0  # Lambda utilities and best practices
+mangum>=0.17.0             # ASGI adapter for Lambda + API Gateway
+
+# Database
+pynamodb>=6.0.0            # DynamoDB ORM (Pythonic interface)
+
+# Storage
+s3fs>=2024.2.0             # S3 filesystem interface
+
+# AI Services
+anthropic>=0.18.0          # Claude API (Bedrock)
+langchain>=0.1.0           # LLM orchestration
+langchain-aws>=0.1.0       # AWS Bedrock integration
+
+# Monitoring & Logging
+aws-xray-sdk>=2.12.0       # Distributed tracing
+watchtower>=3.0.0          # CloudWatch logging handler
+
+# Security
+python-jose[cryptography]>=3.3.0  # JWT tokens
+passlib>=1.7.4             # Password hashing
+
+# Deployment
+chalice>=1.31.0            # Serverless framework for AWS
+zappa>=0.58.0              # Alternative serverless deployment
+
+# Testing
+moto>=5.0.0                # Mock AWS services for testing
+localstack>=3.0.0          # Local AWS cloud stack
+
+# Utilities
+python-dotenv>=1.0.0       # Environment variables (already in base)
+pydantic>=2.0.0            # Data validation

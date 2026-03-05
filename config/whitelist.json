@@ -1,0 +1,124 @@
+{
+  "sources": [
+    {
+      "domain": "gov.in",
+      "name": "Government of India Official Portal",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    },
+    {
+      "domain": "nic.in",
+      "name": "National Informatics Centre",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    },
+    {
+      "domain": "pib.gov.in",
+      "name": "Press Information Bureau",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    },
+    {
+      "domain": "mygov.in",
+      "name": "MyGov India",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    },
+    {
+      "domain": "data.gov.in",
+      "name": "Open Government Data Platform India",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    },
+    {
+      "domain": "who.int",
+      "name": "World Health Organization",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    },
+    {
+      "domain": "un.org",
+      "name": "United Nations",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    },
+    {
+      "domain": "nasa.gov",
+      "name": "NASA - National Aeronautics and Space Administration",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    },
+    {
+      "domain": "cdc.gov",
+      "name": "Centers for Disease Control and Prevention",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    },
+    {
+      "domain": "nih.gov",
+      "name": "National Institutes of Health",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    },
+    {
+      "domain": "gov.uk",
+      "name": "UK Government",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    },
+    {
+      "domain": "europa.eu",
+      "name": "European Union",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    },
+    {
+      "domain": "nature.com",
+      "name": "Nature - International Journal of Science",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    },
+    {
+      "domain": "science.org",
+      "name": "Science Magazine - AAAS",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    },
+    {
+      "domain": "ncbi.nlm.nih.gov",
+      "name": "National Center for Biotechnology Information",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    },
+    {
+      "domain": "worldbank.org",
+      "name": "World Bank",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    },
+    {
+      "domain": "imf.org",
+      "name": "International Monetary Fund",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    },
+    {
+      "domain": "census.gov",
+      "name": "United States Census Bureau",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    },
+    {
+      "domain": "bls.gov",
+      "name": "Bureau of Labor Statistics",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    },
+    {
+      "domain": "noaa.gov",
+      "name": "National Oceanic and Atmospheric Administration",
+      "approved_by": "system",
+      "approved_date": "2026-03-05"
+    }
+  ]
+}

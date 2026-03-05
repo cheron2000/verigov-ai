@@ -1,0 +1,189 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'DynamoDB tables for VeriGov AI - Audit Logs, Verifications, and Whitelist'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: Environment name for resource naming
+
+Resources:
+  # ==================== AUDIT LOGS TABLE ====================
+  AuditLogsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'verigov-${Environment}-audit-logs'
+      BillingMode: PAY_PER_REQUEST  # On-demand pricing for cost control
+      
+      # Primary key structure
+      AttributeDefinitions:
+        - AttributeName: timestamp
+          AttributeType: S
+        - AttributeName: event_type
+          AttributeType: S
+        - AttributeName: verification_id
+          AttributeType: S
+      
+      KeySchema:
+        - AttributeName: timestamp
+          KeyType: HASH  # Partition key
+        - AttributeName: event_type
+          KeyType: RANGE  # Sort key
+      
+      # Global Secondary Indexes for efficient queries
+      GlobalSecondaryIndexes:
+        # Query by verification_id
+        - IndexName: verification_id-index
+          KeySchema:
+            - AttributeName: verification_id
+              KeyType: HASH
+            - AttributeName: timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        
+        # Query by event_type and timestamp range
+        - IndexName: event_type-timestamp-index
+          KeySchema:
+            - AttributeName: event_type
+              KeyType: HASH
+            - AttributeName: timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      
+      # Enable encryption at rest with AWS managed keys
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      
+      # Enable point-in-time recovery for data protection
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      
+      # Enable streams for potential future use (change detection)
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: VeriGov-AI
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  # ==================== VERIFICATIONS TABLE ====================
+  VerificationsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'verigov-${Environment}-verifications'
+      BillingMode: PAY_PER_REQUEST
+      
+      AttributeDefinitions:
+        - AttributeName: verification_id
+          AttributeType: S
+        - AttributeName: status
+          AttributeType: S
+        - AttributeName: stored_at
+          AttributeType: S
+      
+      KeySchema:
+        - AttributeName: verification_id
+          KeyType: HASH  # Partition key only
+      
+      # GSI for querying by status and timestamp
+      GlobalSecondaryIndexes:
+        - IndexName: status-timestamp-index
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+            - AttributeName: stored_at
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: VeriGov-AI
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  # ==================== WHITELIST TABLE ====================
+  WhitelistTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'verigov-${Environment}-whitelist'
+      BillingMode: PAY_PER_REQUEST
+      
+      AttributeDefinitions:
+        - AttributeName: domain
+          AttributeType: S
+      
+      KeySchema:
+        - AttributeName: domain
+          KeyType: HASH  # Partition key only
+      
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: VeriGov-AI
+        - Key: ManagedBy
+          Value: CloudFormation
+
+Outputs:
+  AuditLogsTableName:
+    Description: Name of the Audit Logs DynamoDB table
+    Value: !Ref AuditLogsTable
+    Export:
+      Name: !Sub '${AWS::StackName}-AuditLogsTable'
+  
+  AuditLogsTableArn:
+    Description: ARN of the Audit Logs DynamoDB table
+    Value: !GetAtt AuditLogsTable.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-AuditLogsTableArn'
+  
+  VerificationsTableName:
+    Description: Name of the Verifications DynamoDB table
+    Value: !Ref VerificationsTable
+    Export:
+      Name: !Sub '${AWS::StackName}-VerificationsTable'
+  
+  VerificationsTableArn:
+    Description: ARN of the Verifications DynamoDB table
+    Value: !GetAtt VerificationsTable.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-VerificationsTableArn'
+  
+  WhitelistTableName:
+    Description: Name of the Whitelist DynamoDB table
+    Value: !Ref WhitelistTable
+    Export:
+      Name: !Sub '${AWS::StackName}-WhitelistTable'
+  
+  WhitelistTableArn:
+    Description: ARN of the Whitelist DynamoDB table
+    Value: !GetAtt WhitelistTable.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-WhitelistTableArn'

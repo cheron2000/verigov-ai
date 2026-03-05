@@ -1,0 +1,22 @@
+# Base Requirements for VeriGov AI (Local Development)
+# Install with: pip install -r requirements-base.txt
+
+# Web Framework
+flask>=3.0.0
+flask-cors>=4.0.0
+
+# HTTP & API
+requests>=2.31.0
+
+# AI/ML
+groq>=0.4.0                # Groq AI API
+
+# Configuration
+python-dotenv>=1.0.0
+
+# Development Tools
+pytest>=7.4.0
+pytest-cov>=4.1.0
+black>=23.0.0
+pylint>=2.17.0
+mypy>=1.5.0

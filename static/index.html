@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VeriGov AI - Government Information Verification Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-shield-check"></i>
+                <span class="brand-name">VeriGov AI</span>
+                <span class="beta-badge">BETA</span>
+            </div>
+            <div class="nav-links">
+                <a href="#dashboard" class="nav-link active" data-section="dashboard"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="#verify" class="nav-link" data-section="verify"><i class="fas fa-search"></i> Verify Claim</a>
+                <a href="#sources" class="nav-link" data-section="sources"><i class="fas fa-database"></i> Sources</a>
+                <a href="#reports" class="nav-link" data-section="reports"><i class="fas fa-chart-line"></i> Reports</a>
+            </div>
+            <div class="nav-actions">
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <div class="user-profile">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="dashboard-container">
+        <!-- Sidebar Analytics -->
+        <aside class="sidebar">
+            <div class="stats-card">
+                <div class="stat-icon verified">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" id="todayCount">0</div>
+                    <div class="stat-label">Claims Verified Today</div>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div class="stat-icon reliability">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">98.5%</div>
+                    <div class="stat-label">Source Reliability</div>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div class="stat-icon sources">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">20</div>
+                    <div class="stat-label">Trusted Sources</div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="sidebar-section">
+                <h3><i class="fas fa-history"></i> Recent Activity</h3>
+                <div id="recentActivity" class="activity-list">
+                    <div class="loading-small">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Trusted Sources -->
+            <div class="sidebar-section" id="sources">
+                <h3>
+                    <i class="fas fa-shield-alt"></i> Trusted Sources
+                    <button class="btn-expand" onclick="showAllSources()" title="View all sources">
+                        <i class="fas fa-expand-alt"></i>
+                    </button>
+                </h3>
+                <div id="trustedSources" class="sources-list">
+                    <div class="loading-small">Loading...</div>
+                </div>
+                <button class="btn-view-all" onclick="showAllSources()">
+                    <i class="fas fa-list"></i> View All Sources
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Verification Panel -->
+            <div class="verification-panel" id="verify">
+                <div class="panel-header">
+                    <h1><i class="fas fa-search-plus"></i> Verify Government Claim</h1>
+                    <p class="panel-subtitle">Submit a claim to verify against official government sources</p>
+                </div>
+
+                <form id="verifyForm" class="verification-form">
+                    <div class="form-group">
+                        <label for="claim">
+                            <i class="fas fa-file-alt"></i> Enter Claim to Verify
+                        </label>
+                        <textarea 
+                            id="claim" 
+                            name="claim" 
+                            rows="4" 
+                            placeholder="Example: Is the new tax reform effective from April 2026?"
+                            required
+                        ></textarea>
+                        <div class="input-hint">
+                            <i class="fas fa-info-circle"></i> 
+                            Enter any government policy, scheme, or announcement you want to verify
+                        </div>
+                    </div>
+
+                    <div class="form-group optional-section">
+                        <label for="sources">
+                            <i class="fas fa-link"></i> Additional Sources (Optional)
+                            <span class="optional-badge">Optional</span>
+                        </label>
+                        <div class="sources-input-group">
+                            <input 
+                                type="url" 
+                                id="source1" 
+                                placeholder="https://www.gov.in/..."
+                                class="source-input"
+                            >
+                            <input 
+                                type="url" 
+                                id="source2" 
+                                placeholder="https://www.who.int/..."
+                                class="source-input"
+                            >
+                            <input 
+                                type="url" 
+                                id="source3" 
+                                placeholder="https://www.nasa.gov/..."
+                                class="source-input"
+                            >
+                        </div>
+                        <div class="input-hint">
+                            <i class="fas fa-lightbulb"></i> 
+                            Leave empty for automatic source selection based on claim topic
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-verify" id="verifyBtn">
+                        <i class="fas fa-check-double"></i>
+                        <span>Verify Claim</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading" class="loading-state" style="display: none;">
+                <div class="loading-animation">
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                </div>
+                <p class="loading-text" id="loadingMessage">Analyzing claim and selecting sources...</p>
+                <div class="loading-steps">
+                    <div class="step active"><i class="fas fa-brain"></i> Analyzing claim</div>
+                    <div class="step"><i class="fas fa-search"></i> Selecting sources</div>
+                    <div class="step"><i class="fas fa-download"></i> Fetching data</div>
+                    <div class="step"><i class="fas fa-check"></i> Verifying</div>
+                </div>
+            </div>
+
+            <!-- Results Card -->
+            <div id="result" class="result-card" style="display: none;">
+                <div class="result-header">
+                    <h2><i class="fas fa-clipboard-check"></i> Verification Results</h2>
+                    <button class="btn-download" onclick="downloadReport()">
+                        <i class="fas fa-download"></i> Download Report
+                    </button>
+                </div>
+                <div id="resultContent"></div>
+            </div>
+
+            <!-- Audit Trail -->
+            <div class="audit-trail" id="reports">
+                <div class="audit-header">
+                    <h2><i class="fas fa-history"></i> Verification History</h2>
+                    <button class="btn-secondary" onclick="clearHistory()">
+                        <i class="fas fa-trash-alt"></i> Clear History
+                    </button>
+                </div>
+                <div id="auditTrail" class="audit-list">
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>No verification history yet</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="dashboard-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <p><i class="fas fa-shield-check"></i> VeriGov AI - Powered by Groq AI & AWS</p>
+                <p class="footer-meta">Built for transparent government information verification</p>
+            </div>
+            <div class="footer-section">
+                <span class="status-indicator">
+                    <i class="fas fa-circle"></i> All Systems Operational
+                </span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Sources Modal -->
+    <div id="sourcesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-shield-alt"></i> All Trusted Sources</h2>
+                <button class="modal-close" onclick="closeSourcesModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="sources-filter">
+                    <input type="text" id="sourcesSearch" placeholder="Search sources..." onkeyup="filterSources()">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div id="allSourcesList" class="all-sources-grid">
+                    <div class="loading-small">Loading sources...</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <p><span id="sourcesCount">0</span> trusted sources configured</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
