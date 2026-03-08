@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Confidence Score Display Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-case {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .confidence-bar {
+            background: #e5e7eb;
+            border-radius: 10px;
+            height: 36px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.95rem;
+            transition: width 0.6s ease-out;
+        }
+        .code {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        h2 {
+            color: #1e3a8a;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 5px 0;
+        }
+        .status.fixed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status.issue {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <h1>Confidence Score Display - Before & After Fix</h1>
+    
+    <div class="test-case">
+        <h2>Test Case 1: Normal Confidence (95%)</h2>
+        <p><strong>Backend Response:</strong></p>
+        <div class="code">{"confidence": 95}</div>
+        
+        <p><strong>Before Fix:</strong></p>
+        <div class="status issue">❌ Issue: No validation, could display incorrectly</div>
+        <div class="confidence-bar">
+            <div class="confidence-fill" style="width: 95%">95%</div>
+        </div>
+        
+        <p><strong>After Fix:</strong></p>
+        <div class="status fixed">✅ Fixed: Validated and constrained</div>
+        <div class="code">const confidence = Math.min(Math.max(parseFloat(95) || 0, 0), 100);</div>
+        <div class="confidence-bar">
+            <div class="confidence-fill" style="width: 95%">95%</div>
+        </div>
+    </div>
+    
+    <div class="test-case">
+        <h2>Test Case 2: Edge Case - String Value ("80")</h2>
+        <p><strong>Backend Response:</strong></p>
+        <div class="code">{"confidence": "80"}</div>
+        
+        <p><strong>Before Fix:</strong></p>
+        <div class="status issue">❌ Issue: String not converted, might display as "80%" width</div>
+        
+        <p><strong>After Fix:</strong></p>
+        <div class="status fixed">✅ Fixed: Converted to number with parseFloat()</div>
+        <div class="code">const confidence = Math.min(Math.max(parseFloat("80") || 0, 0), 100);</div>
+        <div class="confidence-bar">
+            <div class="confidence-fill" style="width: 80%">80%</div>
+        </div>
+    </div>
+    
+    <div class="test-case">
+        <h2>Test Case 3: Edge Case - Out of Range (150)</h2>
+        <p><strong>Backend Response:</strong></p>
+        <div class="code">{"confidence": 150}</div>
+        
+        <p><strong>Before Fix:</strong></p>
+        <div class="status issue">❌ Issue: Width would be 150%, breaking layout</div>
+        
+        <p><strong>After Fix:</strong></p>
+        <div class="status fixed">✅ Fixed: Constrained to max 100%</div>
+        <div class="code">const confidence = Math.min(Math.max(parseFloat(150) || 0, 0), 100);</div>
+        <div class="confidence-bar">
+            <div class="confidence-fill" style="width: 100%">100%</div>
+        </div>
+    </div>
+    
+    <div class="test-case">
+        <h2>Test Case 4: Edge Case - Null/Undefined</h2>
+        <p><strong>Backend Response:</strong></p>
+        <div class="code">{"confidence": null}</div>
+        
+        <p><strong>Before Fix:</strong></p>
+        <div class="status issue">❌ Issue: Would display as "null%" or error</div>
+        
+        <p><strong>After Fix:</strong></p>
+        <div class="status fixed">✅ Fixed: Defaults to 0%</div>
+        <div class="code">const confidence = Math.min(Math.max(parseFloat(null) || 0, 0), 100);</div>
+        <div class="confidence-bar">
+            <div class="confidence-fill" style="width: 0%">0%</div>
+        </div>
+    </div>
+    
+    <div class="test-case">
+        <h2>Summary of Fix</h2>
+        <p><strong>What was changed:</strong></p>
+        <ul>
+            <li>Added confidence validation: <code>Math.min(Math.max(parseFloat(result.confidence) || 0, 0), 100)</code></li>
+            <li>Ensures value is always a number between 0-100</li>
+            <li>Rounds display value: <code>Math.round(confidence)</code></li>
+            <li>Uses validated value for both width and text display</li>
+        </ul>
+        
+        <p><strong>Benefits:</strong></p>
+        <ul>
+            <li>✅ Confidence bar width always matches percentage text</li>
+            <li>✅ Handles edge cases gracefully</li>
+            <li>✅ No layout breaking from out-of-range values</li>
+            <li>✅ Consistent display across all browsers</li>
+        </ul>
+    </div>
+</body>
+</html>

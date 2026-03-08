@@ -706,6 +706,12 @@ textarea {
     gap: 20px;
 }
 
+#resultContent p {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+}
+
 .status-badge {
     display: inline-flex;
     align-items: center;
@@ -770,6 +776,9 @@ body.dark-mode .confidence-bar {
     border-radius: 10px;
     line-height: 1.7;
     border-left: 4px solid var(--primary-blue-light);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
 }
 
 /* ===================================

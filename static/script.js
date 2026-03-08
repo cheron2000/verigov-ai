@@ -1,8 +1,6 @@
-// API Configuration - Smart endpoint with auto source selection
-const API_ENDPOINT_SMART = 'https://qycb40y6n6.execute-api.ap-south-1.amazonaws.com/dev/api/verify-sources';
-const API_ENDPOINT_AUDIT = 'https://qycb40y6n6.execute-api.ap-south-1.amazonaws.com/dev/audit';
-const API_ENDPOINT_WHITELIST = 'https://qycb40y6n6.execute-api.ap-south-1.amazonaws.com/dev/whitelist';
-
+const API_ENDPOINT_SMART = '/api/verify';
+const API_ENDPOINT_AUDIT = '/api/audit';
+const API_ENDPOINT_WHITELIST = '/api/whitelist';
 // Load whitelist and audit on page load
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
@@ -121,12 +119,13 @@ async function loadRecentActivity() {
 
 // Load trusted sources for sidebar
 async function loadTrustedSources() {
+    const sourcesDiv = document.getElementById('trustedSources');
+    if (!sourcesDiv) return;
+
     try {
         const response = await fetch(API_ENDPOINT_WHITELIST);
         const data = await response.json();
-        
-        const sourcesDiv = document.getElementById('trustedSources');
-        
+
         if (data.sources && data.sources.length > 0) {
             sourcesDiv.innerHTML = data.sources.slice(0, 5).map(source => `
                 <div class="source-item">
@@ -138,7 +137,7 @@ async function loadTrustedSources() {
             sourcesDiv.innerHTML = '<div class="loading-small">No sources</div>';
         }
     } catch (error) {
-        document.getElementById('trustedSources').innerHTML = '<div class="loading-small">Error loading</div>';
+        sourcesDiv.innerHTML = '<div class="loading-small">Error loading</div>';
     }
 }
 
@@ -155,80 +154,118 @@ function formatTimeAgo(timestamp) {
 }
 
 // Handle form submission
-document.getElementById('verifyForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const claim = document.getElementById('claim').value.trim();
-    const sources = [
-        document.getElementById('source1').value.trim(),
-        document.getElementById('source2').value.trim(),
-        document.getElementById('source3').value.trim()
-    ].filter(s => s !== '');
-    
-    if (!claim) {
-        alert('Please enter a claim to verify');
-        return;
-    }
-    
-    // Show loading with animated steps
-    const loadingMsg = document.getElementById('loadingMessage');
-    const steps = document.querySelectorAll('.step');
-    document.getElementById('loading').style.display = 'block';
-    document.getElementById('result').style.display = 'none';
-    document.getElementById('verifyBtn').disabled = true;
-    
-    // Animate loading steps
-    steps.forEach((step, index) => {
-        setTimeout(() => {
-            steps.forEach(s => s.classList.remove('active'));
-            step.classList.add('active');
-        }, index * 1000);
-    });
-    
-    try {
-        // Use smart endpoint - it will auto-select sources or use provided ones
-        if (sources.length > 0) {
-            loadingMsg.textContent = `Using your ${sources.length} source(s)...`;
-        } else {
-            loadingMsg.textContent = 'Analyzing claim and auto-selecting sources...';
+const verifyForm = document.getElementById('verifyForm');
+if (verifyForm) {
+    verifyForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const claim = document.getElementById('claim').value.trim();
+        const sources = [
+            document.getElementById('source1').value.trim(),
+            document.getElementById('source2').value.trim(),
+            document.getElementById('source3').value.trim()
+        ].filter(s => s !== '');
+
+        if (!claim) {
+            alert('Please enter a claim to verify');
+            return;
         }
-        
-        console.log('Using SMART endpoint with auto source selection');
-        
-        const response = await fetch(API_ENDPOINT_SMART, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ claim, sources })
+
+        const loadingMsg = document.getElementById('loadingMessage');
+        const steps = document.querySelectorAll('.step');
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('result').style.display = 'none';
+        document.getElementById('verifyBtn').disabled = true;
+
+        steps.forEach((step, index) => {
+            setTimeout(() => {
+                steps.forEach(s => s.classList.remove('active'));
+                step.classList.add('active');
+            }, index * 1000);
         });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            displayResult(result);
-            loadAudit();
-            loadRecentActivity();
-            
-            // Update today's count
-            const count = parseInt(localStorage.getItem('todayCount') || 0) + 1;
-            localStorage.setItem('todayCount', count);
-            updateTodayCount();
-        } else {
-            alert('Error: ' + (result.error || 'Unknown error'));
+
+        try {
+            if (sources.length > 0) {
+                loadingMsg.textContent = `Using your ${sources.length} source(s)...`;
+            } else {
+                loadingMsg.textContent = 'Analyzing claim and auto-selecting sources...';
+            }
+
+            console.log('Using SMART endpoint with auto source selection');
+
+            const response = await fetch(API_ENDPOINT_SMART, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ claim, sources })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                displayResult(result);
+                loadAudit();
+                loadRecentActivity();
+
+                const count = parseInt(localStorage.getItem('todayCount') || 0) + 1;
+                localStorage.setItem('todayCount', count);
+                updateTodayCount();
+            } else {
+                alert('Error: ' + (result.error || 'Unknown error'));
+            }
+        } catch (error) {
+            alert('Network error: ' + error.message);
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('verifyBtn').disabled = false;
+            steps.forEach(s => s.classList.remove('active'));
         }
-    } catch (error) {
-        alert('Network error: ' + error.message);
-    } finally {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('verifyBtn').disabled = false;
-        steps.forEach(s => s.classList.remove('active'));
-    }
-});
+    });
+}
 
 function displayResult(result) {
     const resultDiv = document.getElementById('result');
     const contentDiv = document.getElementById('resultContent');
+    
+    // Fix: Parse nested JSON in explanation if present
+    let explanation = result.explanation || 'No explanation provided';
+    let actualStatus = result.status;
+    let actualConfidence = result.confidence;
+    
+    // Check if explanation contains JSON (starts with ```json or {)
+    if (explanation.includes('```json') || (explanation.trim().startsWith('{') && explanation.includes('"explanation"'))) {
+        try {
+            // Remove markdown code blocks
+            let cleaned = explanation.replace(/```json/g, '').replace(/```/g, '').trim();
+            
+            // Try to parse as JSON
+            const parsed = JSON.parse(cleaned);
+            
+            // Extract the actual values from nested JSON
+            if (parsed.explanation) {
+                explanation = parsed.explanation;
+            }
+            if (parsed.status) {
+                actualStatus = parsed.status;
+            }
+            if (parsed.confidence !== undefined) {
+                actualConfidence = parsed.confidence;
+            }
+            
+            console.log('Extracted from nested JSON:', { actualStatus, actualConfidence, explanationLength: explanation.length });
+        } catch (e) {
+            // If JSON parsing fails, try to extract explanation text manually
+            const expMatch = explanation.match(/"explanation"\s*:\s*"([^"]+)"/);
+            if (expMatch) {
+                explanation = expMatch[1];
+            }
+            console.log('Manual extraction used');
+        }
+    }
+    
+    // Ensure confidence is a valid number
+    const confidence = Math.min(Math.max(parseFloat(actualConfidence) || 0, 0), 100);
     
     const statusEmoji = {
         'VERIFIED': '✅',
@@ -239,7 +276,7 @@ function displayResult(result) {
         'ERROR': '⚠️'
     };
     
-    const emoji = statusEmoji[result.status] || '❓';
+    const emoji = statusEmoji[actualStatus] || '❓';
     
     // Research method badge
     const methodBadges = {
@@ -253,8 +290,8 @@ function displayResult(result) {
     
     contentDiv.innerHTML = `
         <div>
-            <span class="status-badge status-${result.status}">
-                ${emoji} ${result.status.replace(/_/g, ' ')}
+            <span class="status-badge status-${actualStatus}">
+                ${emoji} ${actualStatus.replace(/_/g, ' ')}
             </span>
             <span class="status-badge" style="background: #17a2b8; margin-left: 10px;">
                 ${methodBadge}
@@ -280,8 +317,8 @@ function displayResult(result) {
         <div style="margin-top: 15px;">
             <strong>Confidence Score:</strong>
             <div class="confidence-bar">
-                <div class="confidence-fill" style="width: ${result.confidence}%">
-                    ${result.confidence}%
+                <div class="confidence-fill" style="width: ${confidence}%">
+                    ${Math.round(confidence)}%
                 </div>
             </div>
         </div>
@@ -293,7 +330,7 @@ function displayResult(result) {
         
         <div>
             <strong>Explanation:</strong>
-            <div class="explanation">${result.explanation}</div>
+            <div class="explanation">${explanation}</div>
         </div>
         
         <div style="margin-top: 15px;">
@@ -309,12 +346,13 @@ function displayResult(result) {
 }
 
 async function loadWhitelist() {
+    const whitelistDiv = document.getElementById('whitelist');
+    if (!whitelistDiv) return;
+
     try {
         const response = await fetch(API_ENDPOINT_WHITELIST);
         const data = await response.json();
-        
-        const whitelistDiv = document.getElementById('whitelist');
-        
+
         if (data.sources && data.sources.length > 0) {
             whitelistDiv.innerHTML = data.sources.map(source => `
                 <div class="whitelist-item">
@@ -326,17 +364,18 @@ async function loadWhitelist() {
             whitelistDiv.innerHTML = '<p>No sources configured</p>';
         }
     } catch (error) {
-        document.getElementById('whitelist').innerHTML = '<p>Error loading whitelist</p>';
+        whitelistDiv.innerHTML = '<p>Error loading whitelist</p>';
     }
 }
 
 async function loadAudit() {
+    const auditDiv = document.getElementById('auditTrail');
+    if (!auditDiv) return;
+
     try {
         const response = await fetch(`${API_ENDPOINT_AUDIT}?limit=10`);
         const entries = await response.json();
-        
-        const auditDiv = document.getElementById('auditTrail');
-        
+
         if (entries && entries.length > 0) {
             auditDiv.innerHTML = entries.reverse().map(entry => `
                 <div class="audit-item">
@@ -353,7 +392,7 @@ async function loadAudit() {
             `;
         }
     } catch (error) {
-        document.getElementById('auditTrail').innerHTML = '<div class="loading-small">Error loading audit log</div>';
+        auditDiv.innerHTML = '<div class="loading-small">Error loading audit log</div>';
     }
 }
 

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Frontend Display</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .result-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .claim-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #3b82f6;
+        }
+        .explanation {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f0f9ff;
+            border-left: 4px solid #0ea5e9;
+            line-height: 1.7;
+        }
+        strong {
+            display: block;
+            margin-bottom: 10px;
+            color: #1e3a8a;
+        }
+    </style>
+</head>
+<body>
+    <div class="result-card">
+        <h2>Space Claim Verification Test</h2>
+        
+        <div class="claim-section">
+            <strong>Claim:</strong>
+            <p id="claimText">Loading...</p>
+        </div>
+        
+        <div class="explanation">
+            <strong>Explanation:</strong>
+            <div id="explanationText">Loading...</div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate API call
+        const API_URL = 'https://qycb40y6n6.execute-api.ap-south-1.amazonaws.com/dev/api/verify-sources';
+        
+        async function testClaim() {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        claim: 'NASA Artemis II will send astronauts around the Moon in 2026',
+                        sources: []
+                    })
+                });
+                
+                const result = await response.json();
+                
+                // Display full claim
+                document.getElementById('claimText').textContent = result.claim;
+                
+                // Display full explanation
+                document.getElementById('explanationText').textContent = result.explanation;
+                
+                console.log('Full result:', result);
+                console.log('Claim length:', result.claim.length);
+                console.log('Explanation length:', result.explanation.length);
+                
+            } catch (error) {
+                document.getElementById('claimText').textContent = 'Error: ' + error.message;
+                document.getElementById('explanationText').textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        testClaim();
+    </script>
+</body>
+</html>

@@ -31,7 +31,7 @@ subprocess.run([
     sys.executable, "-m", "pip", "install",
     "-t", str(package_dir),
     "--upgrade", "--quiet",
-    "requests", "boto3", "beautifulsoup4", "lxml"
+    "requests", "boto3", "beautifulsoup4", "lxml", "groq"
 ])
 
 # Create zip

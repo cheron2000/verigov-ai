@@ -1,336 +1,342 @@
 """
 Smart Lambda handler with automatic source selection
-Analyzes claim → Selects relevant sources → Fetches → Verifies
+Analyzes claim -> Selects relevant sources -> Fetches -> Verifies
 """
 
 import json
 import os
-import sys
-from datetime import datetime
 import re
+from datetime import datetime
 
-# Trusted sources mapping by category
+# Trusted sources by category
 TRUSTED_SOURCES = {
     'space': ['nasa.gov', 'esa.int'],
-    'health': ['who.int', 'cdc.gov', 'nih.gov'],
-    'science': ['nature.com', 'science.org', 'ncbi.nlm.nih.gov'],
-    'government_india': ['gov.in', 'nic.in', 'pib.gov.in', 'mygov.in', 'data.gov.in'],
-    'government_us': ['census.gov', 'bls.gov'],
-    'government_uk': ['gov.uk'],
-    'government_eu': ['europa.eu'],
-    'international': ['un.org', 'worldbank.org', 'imf.org'],
-    'weather': ['noaa.gov']
+    'health': ['who.int', 'cdc.gov', 'nih.gov', 'fda.gov', 'nhs.uk', 'pubmed.ncbi.nlm.nih.gov'],
+    'science': ['nature.com', 'ncbi.nlm.nih.gov', 'usgs.gov', 'sciencedaily.com', 'arxiv.org'],
+    'biography': ['britannica.com', 'bbc.com', 'theguardian.com'],
+    'government_india': ['pib.gov.in', 'data.gov.in', 'indiabudget.gov.in'],
+    'government_us': ['whitehouse.gov', 'state.gov', 'census.gov', 'bls.gov'],
+    'government_uk': ['gov.uk', 'parliament.uk'],
+    'government_eu': ['europa.eu', 'ec.europa.eu'],
+    'international': ['un.org', 'worldbank.org', 'imf.org', 'oecd.org'],
+    'weather': ['noaa.gov', 'wmo.int'],
+    'environment': ['epa.gov', 'climate.nasa.gov', 'ipcc.ch'],
+    'news': ['bbc.com', 'apnews.com', 'reuters.com'],
+    'reference': ['britannica.com', 'loc.gov'],
+    'data': ['statista.com', 'ourworldindata.org']
 }
 
+
 def lambda_handler(event, context):
-    """Smart verification with automatic source selection"""
-    
-    print(f"Received event: {json.dumps(event)}")
+    """Main handler"""
+    print(f"Event: {json.dumps(event)}")
     
     try:
-        # Parse request body
-        if isinstance(event.get('body'), str):
-            body = json.loads(event['body'])
-        else:
-            body = event.get('body', {})
-        
+        body = json.loads(event['body']) if isinstance(event.get('body'), str) else event.get('body', {})
         claim = body.get('claim', '').strip()
-        user_sources = body.get('sources', [])  # User can still provide sources
+        user_sources = body.get('sources', [])
         
-        # Validate input
         if not claim:
-            return error_response(400, 'Claim is required')
+            return error_response(400, 'Claim required')
         
-        verification_id = generate_verification_id()
+        verification_id = generate_id()
         
         try:
-            # Step 1: Analyze claim to determine topic and select sources
-            analysis = analyze_claim_topic(claim)
+            # Detect topics
+            topics = detect_topics(claim)
+            print(f"Topics: {topics}")
             
-            # Step 2: Select relevant sources (user sources take priority)
+            # Select sources
             if user_sources:
-                selected_sources = user_sources
-                research_method = 'user_provided_sources'
-            elif analysis['relevant_sources']:
-                selected_sources = analysis['relevant_sources']
-                research_method = 'auto_selected_sources'
+                sources = user_sources
+                method = 'user_provided_sources'
+            elif 'biography' in topics:
+                sources = []
+                method = 'ai_knowledge_base'
             else:
-                selected_sources = []
-                research_method = 'ai_knowledge_base'
+                sources = select_sources(topics)
+                method = 'auto_selected_sources' if sources else 'ai_knowledge_base'
             
-            # Step 3: Fetch from sources if available
-            source_contents = []
-            if selected_sources:
-                source_contents = fetch_sources(selected_sources)
+            # Fetch content
+            contents = fetch_sources(sources) if sources else []
+            print(f"Fetched {len(contents)} sources")
             
-            # Step 4: Verify with AI
-            result = analyze_with_sources(claim, source_contents, analysis['topics'])
+            # Verify with AI
+            result = verify_claim(claim, contents, topics)
             
             # Add metadata
-            result['verification_id'] = verification_id
-            result['claim'] = claim
-            result['research_method'] = research_method
-            result['topics_identified'] = analysis['topics']
-            result['sources_selected'] = selected_sources
-            result['sources_checked'] = len(source_contents)
-            result['timestamp'] = datetime.utcnow().isoformat() + 'Z'
+            result.update({
+                'verification_id': verification_id,
+                'claim': claim,
+                'research_method': method,
+                'topics_identified': topics,
+                'sources_selected': sources,
+                'sources_checked': len(contents),
+                'timestamp': datetime.utcnow().isoformat() + 'Z',
+                'research_note': f"Auto-selected {len(sources)} sources for {', '.join(topics)}" if method == 'auto_selected_sources' else f"AI knowledge base ({', '.join(topics)})"
+            })
             
-            # Add research method explanation
-            if research_method == 'user_provided_sources':
-                result['research_note'] = f"Verified using {len(selected_sources)} user-provided source(s)"
-            elif research_method == 'auto_selected_sources':
-                result['research_note'] = f"Automatically selected {len(selected_sources)} relevant source(s) based on topics: {', '.join(analysis['topics'])}"
-            else:
-                result['research_note'] = f"Verified using AI knowledge base (topics: {', '.join(analysis['topics'])}). No specific trusted sources found for this claim."
+            store_result(verification_id, result)
+            
+            return {
+                'statusCode': 200,
+                'headers': cors_headers(),
+                'body': json.dumps(result)
+            }
             
         except Exception as e:
             print(f"Verification error: {e}")
             import traceback
             traceback.print_exc()
-            result = {
-                'status': 'ERROR',
-                'confidence': 0,
-                'explanation': f'Verification error: {str(e)}',
-                'research_method': 'error',
-                'research_note': 'An error occurred during verification'
+            
+            return {
+                'statusCode': 200,
+                'headers': cors_headers(),
+                'body': json.dumps({
+                    'verification_id': verification_id,
+                    'claim': claim,
+                    'status': 'ERROR',
+                    'confidence': 0,
+                    'explanation': f'Error: {str(e)}',
+                    'research_method': 'error',
+                    'topics_identified': [],
+                    'sources_selected': [],
+                    'sources_checked': 0,
+                    'timestamp': datetime.utcnow().isoformat() + 'Z'
+                })
             }
-        
-        # Store in DynamoDB
-        try:
-            store_verification(verification_id, result)
-        except Exception as e:
-            print(f"Storage error: {e}")
-        
-        return {
-            'statusCode': 200,
-            'headers': get_cors_headers(),
-            'body': json.dumps(result)
-        }
-        
+    
     except Exception as e:
-        print(f"Lambda error: {e}")
+        print(f"Handler error: {e}")
         import traceback
         traceback.print_exc()
         return error_response(500, str(e))
 
 
-def analyze_claim_topic(claim):
-    """Analyze claim to identify topics and select relevant sources"""
-    import requests
-    
+def detect_topics(claim):
+    """Simple keyword-based topic detection"""
     claim_lower = claim.lower()
     topics = []
-    relevant_sources = []
     
-    # Keyword-based topic detection
-    topic_keywords = {
-        'space': ['space', 'nasa', 'moon', 'mars', 'planet', 'satellite', 'astronaut', 'rocket', 'orbit'],
-        'health': ['health', 'disease', 'vaccine', 'medical', 'hospital', 'doctor', 'covid', 'virus', 'pandemic'],
-        'science': ['science', 'research', 'study', 'experiment', 'scientific', 'biology', 'chemistry', 'physics'],
-        'government_india': ['india', 'indian government', 'delhi', 'mumbai', 'modi', 'parliament'],
-        'government_us': ['united states', 'america', 'us government', 'washington', 'congress', 'census'],
-        'government_uk': ['uk', 'britain', 'british', 'london', 'parliament'],
-        'government_eu': ['europe', 'european union', 'eu', 'brussels'],
-        'international': ['united nations', 'un', 'world bank', 'imf', 'international'],
-        'weather': ['weather', 'climate', 'temperature', 'rain', 'storm', 'hurricane', 'forecast']
-    }
+    # Check each category
+    if any(w in claim_lower for w in ['who is', 'who are', 'biography']):
+        topics.append('biography')
+    if any(w in claim_lower for w in ['space', 'nasa', 'moon', 'mars', 'planet', 'satellite', 'astronaut', 'artemis', 'esa']):
+        topics.append('space')
+    if any(w in claim_lower for w in ['health', 'disease', 'vaccine', 'medical', 'brain', 'body']):
+        topics.append('health')
+    if any(w in claim_lower for w in ['science', 'research', 'study', 'scientific']):
+        topics.append('science')
     
-    # Detect topics
-    for topic, keywords in topic_keywords.items():
-        if any(keyword in claim_lower for keyword in keywords):
-            topics.append(topic)
-            # Add sources for this topic
-            if topic in TRUSTED_SOURCES:
-                relevant_sources.extend(TRUSTED_SOURCES[topic])
-    
-    # Remove duplicates and limit to top 3 sources
-    relevant_sources = list(dict.fromkeys(relevant_sources))[:3]
-    
-    # Convert domains to full URLs
-    relevant_sources = [f"https://www.{domain}/" if not domain.startswith('http') else domain 
-                       for domain in relevant_sources]
-    
-    print(f"Topics identified: {topics}")
-    print(f"Relevant sources: {relevant_sources}")
-    
-    return {
-        'topics': topics if topics else ['general'],
-        'relevant_sources': relevant_sources
-    }
+    return topics[:2] if topics else ['general']
 
 
-def fetch_sources(source_urls):
-    """Fetch content from source URLs"""
+def select_sources(topics):
+    """Select sources for topics"""
+    sources = []
+    for topic in topics:
+        if topic in TRUSTED_SOURCES:
+            sources.extend(TRUSTED_SOURCES[topic][:2])
+    
+    # Remove duplicates, limit to 3
+    unique = list(dict.fromkeys(sources))[:3]
+    return [f"https://www.{d}/" if not d.startswith('http') else d for d in unique]
+
+
+def fetch_sources(urls):
+    """Fetch content from URLs"""
     import requests
     from bs4 import BeautifulSoup
     
     contents = []
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
     
-    for url in source_urls[:3]:  # Limit to 3 sources
+    for url in urls[:3]:
         try:
-            print(f"Fetching: {url}")
-            
-            response = requests.get(
-                url,
-                timeout=8,
-                headers={'User-Agent': 'VeriGov-Bot/1.0'}
-            )
-            
-            if response.status_code == 200:
-                soup = BeautifulSoup(response.content, 'html.parser')
+            r = requests.get(url, timeout=10, headers=headers)
+            if r.status_code == 200:
+                soup = BeautifulSoup(r.content, 'html.parser')
+                for tag in soup(['script', 'style', 'nav', 'header', 'footer']):
+                    tag.decompose()
                 
-                # Remove script and style elements
-                for script in soup(["script", "style"]):
-                    script.decompose()
-                
-                # Get text
                 text = soup.get_text()
+                text = re.sub(r'\s+', ' ', text)[:4000]
                 
-                # Clean up text
-                lines = (line.strip() for line in text.splitlines())
-                chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-                text = ' '.join(chunk for chunk in chunks if chunk)
-                
-                # Limit text length
-                text = text[:3000]  # First 3000 chars
-                
-                contents.append({
-                    'url': url,
-                    'content': text,
-                    'status': 'success'
-                })
-                
-                print(f"✅ Fetched {len(text)} chars from {url}")
-            else:
-                print(f"❌ Failed to fetch {url}: {response.status_code}")
-                
+                contents.append({'url': url, 'content': text})
+                print(f"Fetched {len(text)} chars from {url}")
         except Exception as e:
-            print(f"❌ Error fetching {url}: {e}")
+            print(f"Fetch error {url}: {e}")
     
     return contents
 
 
-def analyze_with_sources(claim, source_contents, topics):
-    """Analyze claim with AI using source content or knowledge base"""
+def verify_claim(claim, sources, topics):
+    """Verify claim with Groq AI"""
     import requests
     
     api_key = os.environ.get('GROQ_API_KEY')
     if not api_key:
-        raise Exception("GROQ_API_KEY not configured")
+        raise Exception("GROQ_API_KEY missing")
     
-    url = "https://api.groq.com/openai/v1/chat/completions"
-    
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-    
-    # Build prompt based on available sources
-    if source_contents:
-        sources_text = "\n\n".join([
-            f"Source {i+1} ({src['url']}):\n{src['content'][:800]}"
-            for i, src in enumerate(source_contents)
-            if src.get('content')
-        ])
-        
-        prompt = f"""Analyze this claim using the provided source content from trusted sources:
-
-Claim: {claim}
-
-Topics: {', '.join(topics)}
-
-Trusted Source Content:
-{sources_text}
-
-Based on the source content above, provide a JSON response with:
-- status: VERIFIED (if sources confirm), UNVERIFIED (if sources contradict), or PARTIALLY_VERIFIED (if sources partially support)
-- confidence: 0-100 (based on source reliability and clarity)
-- explanation: Brief explanation citing the sources and mentioning that content was fetched from trusted sources
-- evidence: Key quotes or facts from sources
-
-Response:"""
+    # Build context
+    if sources:
+        context = "\n\n".join([f"Source {i+1}:\n{s['content'][:1500]}" for i, s in enumerate(sources)])
+        instruction = "Use the provided sources to verify the claim."
     else:
-        prompt = f"""Analyze this claim using your knowledge base:
-
-Claim: {claim}
-
-Topics: {', '.join(topics)}
-
-Note: No specific trusted sources were found for this claim. Use your general knowledge to assess it.
-
-Provide a JSON response with:
-- status: VERIFIED, UNVERIFIED, or PARTIALLY_VERIFIED
-- confidence: 0-100
-- explanation: Brief explanation mentioning that this is based on AI knowledge base since no specific trusted sources were available
-- evidence: Key facts supporting your assessment
-
-Response:"""
+        context = "No sources available."
+        instruction = "Use your knowledge base to verify the claim."
     
+    prompt = f"""Verify this claim: {claim}
+
+{context}
+
+{instruction}
+
+Respond with JSON only:
+{{"status": "VERIFIED", "confidence": 90, "explanation": "...", "evidence": ["fact1"]}}"""
+    
+    # Call Groq
+    url = "https://api.groq.com/openai/v1/chat/completions"
     payload = {
         "model": "llama-3.3-70b-versatile",
-        "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.3,
-        "max_tokens": 800
+        "messages": [
+            {"role": "system", "content": "Fact-checker. JSON only."},
+            {"role": "user", "content": prompt}
+        ],
+        "temperature": 0.1,
+        "max_tokens": 600
     }
     
-    print(f"Calling Groq API...")
-    response = requests.post(url, headers=headers, json=payload, timeout=25)
-    response.raise_for_status()
+    r = requests.post(url, headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}, json=payload, timeout=25)
+    r.raise_for_status()
     
-    data = response.json()
-    ai_response = data['choices'][0]['message']['content']
+    response_text = r.json()['choices'][0]['message']['content']
+    print(f"AI response: {response_text[:100]}")
     
-    # Parse AI response
+    # Parse response - BULLETPROOF
+    return parse_response(response_text)
+
+
+def parse_response(text):
+    """Bulletproof JSON parser"""
+    
+    # Remove ALL markdown
+    text = text.replace('```json', '').replace('```', '').strip()
+    
+    # Try direct parse
     try:
-        json_match = re.search(r'\{[^}]+\}', ai_response, re.DOTALL)
-        if json_match:
-            result = json.loads(json_match.group())
-        else:
-            result = json.loads(ai_response)
+        return validate(json.loads(text))
     except:
-        result = {
-            'status': 'UNVERIFIED',
-            'confidence': 50,
-            'explanation': ai_response[:300]
-        }
+        pass
+    
+    # Find JSON by counting braces
+    depth = 0
+    start = None
+    
+    for i, c in enumerate(text):
+        if c == '{':
+            if depth == 0:
+                start = i
+            depth += 1
+        elif c == '}':
+            depth -= 1
+            if depth == 0 and start is not None:
+                try:
+                    obj = json.loads(text[start:i+1])
+                    if 'status' in obj:
+                        return validate(obj)
+                except:
+                    pass
+    
+    # Extract fields manually
+    return extract_fields(text)
+
+
+def extract_fields(text):
+    """Extract fields from text"""
+    result = {'status': 'UNVERIFIED', 'confidence': 50, 'explanation': text[:400], 'evidence': []}
+    
+    # Status
+    m = re.search(r'"status"\s*:\s*"(VERIFIED|UNVERIFIED|PARTIALLY_VERIFIED)"', text, re.I)
+    if m:
+        result['status'] = m.group(1).upper()
+    
+    # Confidence
+    m = re.search(r'"confidence"\s*:\s*(\d+)', text)
+    if m:
+        result['confidence'] = int(m.group(1))
+    
+    # Explanation
+    m = re.search(r'"explanation"\s*:\s*"([^"]{30,600})"', text, re.DOTALL)
+    if m:
+        result['explanation'] = m.group(1)[:500]
+    
+    # Evidence
+    m = re.search(r'"evidence"\s*:\s*\[(.*?)\]', text, re.DOTALL)
+    if m:
+        items = re.findall(r'"([^"]+)"', m.group(1))
+        result['evidence'] = items[:5]
     
     return result
 
 
-def generate_verification_id():
-    """Generate unique verification ID"""
+def validate(obj):
+    """Validate result object"""
+    if 'status' not in obj:
+        obj['status'] = 'UNVERIFIED'
+    if 'confidence' not in obj:
+        obj['confidence'] = 50
+    if 'explanation' not in obj:
+        obj['explanation'] = 'No explanation'
+    if 'evidence' not in obj:
+        obj['evidence'] = []
+    
+    obj['status'] = str(obj['status']).upper()
+    if obj['status'] not in ['VERIFIED', 'UNVERIFIED', 'PARTIALLY_VERIFIED']:
+        obj['status'] = 'UNVERIFIED'
+    
+    try:
+        obj['confidence'] = max(0, min(100, int(obj['confidence'])))
+    except:
+        obj['confidence'] = 50
+    
+    return obj
+
+
+def generate_id():
+    """Generate UUID"""
     import uuid
     return str(uuid.uuid4())
 
 
-def store_verification(verification_id, result):
-    """Store verification result in DynamoDB"""
-    import boto3
-    from decimal import Decimal
-    
-    region = os.environ.get('AWS_DEFAULT_REGION', os.environ.get('AWS_REGION', 'ap-south-1'))
-    dynamodb = boto3.resource('dynamodb', region_name=region)
-    table_name = f"verigov-{os.environ.get('ENVIRONMENT', 'dev')}-verifications"
-    table = dynamodb.Table(table_name)
-    
-    def convert_floats(obj):
-        if isinstance(obj, float):
-            return Decimal(str(obj))
-        elif isinstance(obj, dict):
-            return {k: convert_floats(v) for k, v in obj.items()}
-        elif isinstance(obj, list):
-            return [convert_floats(item) for item in obj]
-        return obj
-    
-    item = convert_floats(result)
-    item['stored_at'] = datetime.utcnow().isoformat() + 'Z'
-    
-    table.put_item(Item=item)
-    print(f"Stored verification {verification_id} in DynamoDB")
+def store_result(vid, result):
+    """Store in DynamoDB"""
+    try:
+        import boto3
+        from decimal import Decimal
+        
+        def to_decimal(obj):
+            if isinstance(obj, float):
+                return Decimal(str(obj))
+            elif isinstance(obj, dict):
+                return {k: to_decimal(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [to_decimal(x) for x in obj]
+            return obj
+        
+        dynamodb = boto3.resource('dynamodb', region_name='ap-south-1')
+        table = dynamodb.Table(f"verigov-{os.environ.get('ENVIRONMENT', 'dev')}-verifications")
+        
+        item = to_decimal(result)
+        item['stored_at'] = datetime.utcnow().isoformat() + 'Z'
+        table.put_item(Item=item)
+        print(f"Stored {vid}")
+    except Exception as e:
+        print(f"Storage error: {e}")
 
 
-def get_cors_headers():
-    """Get CORS headers"""
+def cors_headers():
+    """CORS headers"""
     return {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -339,13 +345,10 @@ def get_cors_headers():
     }
 
 
-def error_response(status_code, message):
-    """Return error response"""
+def error_response(code, msg):
+    """Error response"""
     return {
-        'statusCode': status_code,
-        'headers': get_cors_headers(),
-        'body': json.dumps({
-            'error': 'Request failed' if status_code < 500 else 'Internal server error',
-            'message': str(message)
-        })
+        'statusCode': code,
+        'headers': cors_headers(),
+        'body': json.dumps({'error': 'Failed', 'message': str(msg)})
     }

@@ -1,124 +1,389 @@
 {
   "sources": [
     {
-      "domain": "gov.in",
-      "name": "Government of India Official Portal",
-      "approved_by": "system",
-      "approved_date": "2026-03-05"
-    },
-    {
-      "domain": "nic.in",
-      "name": "National Informatics Centre",
-      "approved_by": "system",
-      "approved_date": "2026-03-05"
-    },
-    {
       "domain": "pib.gov.in",
-      "name": "Press Information Bureau",
+      "name": "Press Information Bureau India",
+      "category": "government_india",
       "approved_by": "system",
-      "approved_date": "2026-03-05"
+      "approved_date": "2026-03-08"
     },
     {
       "domain": "mygov.in",
       "name": "MyGov India",
+      "category": "government_india",
       "approved_by": "system",
-      "approved_date": "2026-03-05"
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "nic.in",
+      "name": "National Informatics Centre",
+      "category": "government_india",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
     },
     {
       "domain": "data.gov.in",
       "name": "Open Government Data Platform India",
+      "category": "government_india",
       "approved_by": "system",
-      "approved_date": "2026-03-05"
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "indiabudget.gov.in",
+      "name": "India Budget Portal",
+      "category": "government_india",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
     },
     {
       "domain": "who.int",
       "name": "World Health Organization",
+      "category": "health",
       "approved_by": "system",
-      "approved_date": "2026-03-05"
-    },
-    {
-      "domain": "un.org",
-      "name": "United Nations",
-      "approved_by": "system",
-      "approved_date": "2026-03-05"
-    },
-    {
-      "domain": "nasa.gov",
-      "name": "NASA - National Aeronautics and Space Administration",
-      "approved_by": "system",
-      "approved_date": "2026-03-05"
+      "approved_date": "2026-03-08"
     },
     {
       "domain": "cdc.gov",
       "name": "Centers for Disease Control and Prevention",
+      "category": "health",
       "approved_by": "system",
-      "approved_date": "2026-03-05"
+      "approved_date": "2026-03-08"
     },
     {
       "domain": "nih.gov",
       "name": "National Institutes of Health",
+      "category": "health",
       "approved_by": "system",
-      "approved_date": "2026-03-05"
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "fda.gov",
+      "name": "U.S. Food and Drug Administration",
+      "category": "health",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "who.int",
+      "name": "World Health Organization",
+      "category": "health",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "nhs.uk",
+      "name": "National Health Service UK",
+      "category": "health",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "nasa.gov",
+      "name": "NASA - National Aeronautics and Space Administration",
+      "category": "space",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "esa.int",
+      "name": "European Space Agency",
+      "category": "space",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
     },
     {
       "domain": "gov.uk",
       "name": "UK Government",
+      "category": "government_uk",
       "approved_by": "system",
-      "approved_date": "2026-03-05"
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "parliament.uk",
+      "name": "UK Parliament",
+      "category": "government_uk",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
     },
     {
       "domain": "europa.eu",
       "name": "European Union",
+      "category": "government_eu",
       "approved_by": "system",
-      "approved_date": "2026-03-05"
+      "approved_date": "2026-03-08"
     },
     {
-      "domain": "nature.com",
-      "name": "Nature - International Journal of Science",
+      "domain": "ec.europa.eu",
+      "name": "European Commission",
+      "category": "government_eu",
       "approved_by": "system",
-      "approved_date": "2026-03-05"
+      "approved_date": "2026-03-08"
     },
     {
-      "domain": "science.org",
-      "name": "Science Magazine - AAAS",
+      "domain": "whitehouse.gov",
+      "name": "The White House",
+      "category": "government_us",
       "approved_by": "system",
-      "approved_date": "2026-03-05"
+      "approved_date": "2026-03-08"
     },
     {
-      "domain": "ncbi.nlm.nih.gov",
-      "name": "National Center for Biotechnology Information",
+      "domain": "state.gov",
+      "name": "U.S. Department of State",
+      "category": "government_us",
       "approved_by": "system",
-      "approved_date": "2026-03-05"
-    },
-    {
-      "domain": "worldbank.org",
-      "name": "World Bank",
-      "approved_by": "system",
-      "approved_date": "2026-03-05"
-    },
-    {
-      "domain": "imf.org",
-      "name": "International Monetary Fund",
-      "approved_by": "system",
-      "approved_date": "2026-03-05"
+      "approved_date": "2026-03-08"
     },
     {
       "domain": "census.gov",
       "name": "United States Census Bureau",
+      "category": "government_us",
       "approved_by": "system",
-      "approved_date": "2026-03-05"
+      "approved_date": "2026-03-08"
     },
     {
       "domain": "bls.gov",
       "name": "Bureau of Labor Statistics",
+      "category": "government_us",
       "approved_by": "system",
-      "approved_date": "2026-03-05"
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "epa.gov",
+      "name": "U.S. Environmental Protection Agency",
+      "category": "environment",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
     },
     {
       "domain": "noaa.gov",
       "name": "National Oceanic and Atmospheric Administration",
+      "category": "weather",
       "approved_by": "system",
-      "approved_date": "2026-03-05"
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "usgs.gov",
+      "name": "U.S. Geological Survey",
+      "category": "science",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "un.org",
+      "name": "United Nations",
+      "category": "international",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "worldbank.org",
+      "name": "World Bank",
+      "category": "international",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "imf.org",
+      "name": "International Monetary Fund",
+      "category": "international",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "nature.com",
+      "name": "Nature - International Journal of Science",
+      "category": "science",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "ncbi.nlm.nih.gov",
+      "name": "National Center for Biotechnology Information",
+      "category": "science",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "bbc.com",
+      "name": "BBC News",
+      "category": "news",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "apnews.com",
+      "name": "Associated Press",
+      "category": "news",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "theguardian.com",
+      "name": "The Guardian",
+      "category": "news",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "nytimes.com",
+      "name": "The New York Times",
+      "category": "news",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "reuters.com",
+      "name": "Reuters",
+      "category": "news",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "aljazeera.com",
+      "name": "Al Jazeera",
+      "category": "news",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "bbc.co.uk",
+      "name": "BBC UK",
+      "category": "news",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "sciencedaily.com",
+      "name": "Science Daily",
+      "category": "science",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "arxiv.org",
+      "name": "arXiv - Scientific Papers",
+      "category": "science",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "scholar.google.com",
+      "name": "Google Scholar",
+      "category": "science",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "pubmed.ncbi.nlm.nih.gov",
+      "name": "PubMed - Medical Literature",
+      "category": "health",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "climate.nasa.gov",
+      "name": "NASA Climate",
+      "category": "environment",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "ipcc.ch",
+      "name": "Intergovernmental Panel on Climate Change",
+      "category": "environment",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "wmo.int",
+      "name": "World Meteorological Organization",
+      "category": "weather",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "oecd.org",
+      "name": "Organisation for Economic Co-operation and Development",
+      "category": "international",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "amnesty.org",
+      "name": "Amnesty International",
+      "category": "international",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "hrw.org",
+      "name": "Human Rights Watch",
+      "category": "international",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "transparency.org",
+      "name": "Transparency International",
+      "category": "international",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "weforum.org",
+      "name": "World Economic Forum",
+      "category": "international",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "britannica.com",
+      "name": "Britannica Encyclopedia",
+      "category": "reference",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "oxfordbibliographies.com",
+      "name": "Oxford Bibliographies",
+      "category": "reference",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "loc.gov",
+      "name": "Library of Congress",
+      "category": "reference",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "britannica.com",
+      "name": "Britannica",
+      "category": "reference",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "statista.com",
+      "name": "Statista - Statistics Portal",
+      "category": "data",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "ourworldindata.org",
+      "name": "Our World in Data",
+      "category": "data",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
+    },
+    {
+      "domain": "gapminder.org",
+      "name": "Gapminder - Global Statistics",
+      "category": "data",
+      "approved_by": "system",
+      "approved_date": "2026-03-08"
     }
   ]
 }

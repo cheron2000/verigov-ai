@@ -91,16 +91,27 @@ class LocalStorage(StorageInterface):
             return None
     
     def get_whitelist(self) -> List[str]:
-        """Get whitelist sources from file"""
+        """Get whitelist domain list from file"""
         try:
             if self.whitelist_path.exists():
                 with open(self.whitelist_path, 'r') as f:
                     data = json.load(f)
-                    return data.get('sources', [])
+                    sources = data.get('sources', [])
+
+                    # Extract domains from source objects
+                    domains = []
+                    for source in sources:
+                        if isinstance(source, str):
+                            domains.append(source)
+                        elif isinstance(source, dict) and 'domain' in source:
+                            domains.append(source['domain'])
+
+                    return domains
             return []
         except Exception as e:
             print(f"Error getting whitelist: {e}")
             return []
+
     
     def update_whitelist(self, sources: List[str]) -> bool:
         """Update whitelist sources in file"""
