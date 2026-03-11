@@ -15,7 +15,7 @@
 
 ## 📹 Demo Video
 
-[Link to demo video - if you create one]
+Link:https://drive.google.com/file/d/1scEN5GrYwuAH6srUvhrwAWR7KLRxZJV_/view?usp=sharing
 
 ## 🎯 Problem Statement
 
@@ -334,10 +334,7 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 ## 📞 Contact
 
-- **Email**: [your-email@example.com]
-- **GitHub**: [https://github.com/yourusername](https://github.com/yourusername)
-- **LinkedIn**: [Your LinkedIn Profile]
-
+- **Email**: [shreyashirkar1@gmail.com]
 ## 🙏 Acknowledgments
 
 - AWS for providing cloud infrastructure
@@ -349,4 +346,3 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 **Built with ❤️ for transparent governance and informed citizens**
 
-**Live Demo:** [http://verigov-ai-frontend.s3-website.ap-south-1.amazonaws.com](http://verigov-ai-frontend.s3-website.ap-south-1.amazonaws.com)
